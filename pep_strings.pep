@@ -1,4 +1,4 @@
-changement sur la branche test 
+ 
 STRO nn,d; 
 
 STRO word,d;

@@ -1,6 +1,22 @@
 
+         STRO MSG_M,d; Message nomnbre de match a jouer
 
-         STRO    MSG1,d      ;
+         DECI nbmtch,d; entre le nombre de match a jouer.
+
+         LDA nbmtch,d ; LOAD le nombre de match
+         ANDA 0x0001,i ; Si ce n'est pas egale a 1 le dernier bit ->
+         BREQ impaire ;
+         BR pair 
+
+impaire: LDA nbmtch,d;
+         ADDA 1,i; IF EVEN ADD TO ACCUMULATOR +1; 
+         STA nbmtch,d;
+         
+
+pair:    LDA 0,i; REFRESH l'accumulateur a 0
+
+
+while:   STRO    MSG1,d      ;
          CHARI   tmp,d       ;
 
          LDA 0,i;
@@ -66,25 +82,15 @@ main:    CHARO   choix1,d    ;
          CHARO   '\n',i   ;
  
 
-         STRO MSG_M,d; Message nomnbre de match a jouer
-
-         DECI nbmtch,d; entre le nombre de match a jouer.
-
+        
          LDA choix1,d;
          CPA choix2,d;
          BREQ mtchnul; Verifie si le choix du joueur 1 et 2 sont egaux
 
 
-         LDA 0,i; REFRESH l'accumulateur a 0
+  
          
-         LDA nbmtch,d ; LOAD le nombre de match
-         ANDA 0x0001,i ; Si ce n'est pas egale a 1 le dernier bit ->
-         BREQ impaire ;
-         BR next 
 
-impaire: LDA nbmtch,d;
-         ADDA 1,i; IF EVEN ADD TO ACCUMULATOR +1; 
-         STA nbmtch,d;
 
          
      
@@ -98,6 +104,7 @@ next: DECO nbmtch,d
 enter: .BLOCK 2;
 dummy: .BLOCK 2   ;
 tmp:     .BLOCK   2           ;
+iterate: .BLOCK 2 ;
 nbmtch:  .WORD 2;
 egale:   .ASCII "Les valeurs sont egaux, jouer une autre fois\n\x00"; 
 choix1:  .WORD '*'          ; 

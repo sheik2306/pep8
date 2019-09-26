@@ -79,7 +79,19 @@ mtchnul: STRO egale,d;
          ADDA 1,i;
          STA nbmtch,d;
          DECO nbmtch,d;
-         BR arrete
+         BR while
+
+
+verifier: LDA 0,i; DEBUT -> verification de points, si est suffisant pour gagner.
+         LDA nbmtch,d; 
+         ASRA ; Nombre de Match / 2
+         ADDA 1,i; (Nombre de Match  +1) dans l'accumulateur
+         CPA points1,d; if ( points1 == (nombreDeMatch/2)+1)
+         BREQ termine1; 
+
+         CPA points2,d; if ( points2 == (nombreDeMatch/2)+1)     
+         BREQ termine2; Brancher au gagnant (joueur 2)
+         BR i; FIN -> si aucun gagnant brancher a l'iteration
 
 i:      LDA 0,i; DEBUT -> boucle d'iteration
         LDA iterate,d; valeur de [i] 
@@ -96,8 +108,7 @@ gagner2:  STRO gagnant2,d;
          ADDA 1,i;
          STA points2,d;
          LDA 0,i;
-         DECO points2,d;
-         BR i
+         BR verifier;
 
 gagner1:  STRO gagnant1,d;
          LDA 0,i;
@@ -105,19 +116,15 @@ gagner1:  STRO gagnant1,d;
          ADDA 1,i;           Ajoute +1 a son pointage
          STA points1,d;      Store la nouvelle valeure dans points1
 
-         LDA 0,i; DEBUT -> verification de points, si est suffisant pour gagner.
-         LDA nbmtch,d; 
-         ASRA ; NOMBRE DE MATCH / 2
-         ADDA 1,i; Ajoute +1 a l'accumulateur
-         CPA points1,d; Si le nombre de points1 est plus que (nombre_de_match/2)+1 , alors Joueur2 ne peux pas gagner
-         BREQ termine1; FIN -> Verification de points
-
-
-         DECO points1,d;     affiche le nombre de points
-         BR i
+      
+         BR verifier;
 
 termine1: STRO joueur1,d;
          DECO points1,d; 
+         STOP;
+
+termine2: STRO joueur2,d;
+         DECO points2,d;
          STOP;
 
 main:    LDA 0,i;
@@ -181,7 +188,7 @@ MSG_M:   .ASCII  "\nVeuillez entrer le nombre de match a jouer\n\x00";
 gagnant1:    .ASCII  "JOUEUR 1: +1 points!\n\x00";
 gagnant2:    .ASCII  "JOUEUR 2: +1 points!\n\x00";
 termine:        .ASCII "le nombre de match est terminer";
-joueur1: .ASCII "joueur1 est gagnant\n\x00";
-joueur2: .ASCII "joueur2 est gagnant\n\x00";
+joueur1: .ASCII "joueur1 est le gagnant avec un score de : \x00";
+joueur2: .ASCII "joueur2 est le gagnant avec un score de : \x00";
 END: .ASCII "\nend of program \n\x00";
          .END                  

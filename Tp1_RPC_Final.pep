@@ -75,17 +75,22 @@ mtchnul: STRO egale,d;
          BR arrete
 
 
-main:    CHARO   choix1,d    ;
+main:    LDA choix1,d;
+         CPA choix2,d;
+         BREQ mtchnul; Verifie si le choix du joueur 1 et 2 sont egaux
+         
+         LDA 0,i; Reset L'accumulateur
+         LDBYTEA choix1,d; verifie si choix1 est egale a "papier (112);
+         CPA 'p',i;
+         BREQ arrete
+
+         CHARO   choix1,d    ;
 
          CHARO   '\n',i   ;
          CHARO choix2,d;
          CHARO   '\n',i   ;
  
 
-        
-         LDA choix1,d;
-         CPA choix2,d;
-         BREQ mtchnul; Verifie si le choix du joueur 1 et 2 sont egaux
 
 
   

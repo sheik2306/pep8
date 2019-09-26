@@ -74,11 +74,7 @@ arrete: STRO    MSG_ERR,d
         STOP
 
 mtchnul: STRO egale,d;
-         LDA 0,i;
-         LDA nbmtch,d;
-         ADDA 1,i;
-         STA nbmtch,d;
-         DECO nbmtch,d;
+      
          BR while
 
 

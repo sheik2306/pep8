@@ -1,5 +1,6 @@
-
-         STRO MSG_M,d; Message nomnbre de match a jouer
+         STRO MSG_ENT,d;
+        CHARO '\n',i; 
+          STRO MSG_M,d; Message nomnbre de match a jouer
 
          DECI nbmtch,d; entre le nombre de match a jouer.
 
@@ -110,6 +111,10 @@ finGame: LDA points1,d;
          CPA points2,d;
          BRGT termine1;
 
+         STRO egalefin,d;
+         
+         STOP
+
        
 
 i:      LDA 0,i; DEBUT -> boucle d'iteration
@@ -151,6 +156,8 @@ termine2:STRO fin2,d;
          DECO points1,d; 
          STRO tiret,d;
          DECO points2,d; 
+
+
          STOP;
 
 main:    LDA 0,i;
@@ -208,7 +215,8 @@ tmp:     .BLOCK   2           ;
 iterate: .WORD 0 ; 
 restant: .WORD 0;
 nbmtch:  .WORD 2;
-egale:   .ASCII "Les valeurs sont egaux, jouer une autre fois\n\x00"; 
+egale:   .ASCII "Les valeurs sont egaux, jouer une autre fois\n\x00";
+egalefin: .ASCII "Le nombre de match est terminer, aucun gagnant\n\x00";
 choix1:  .WORD '*'          ; 
 choix2:  .WORD '*'          ;
 points1: .WORD 0;

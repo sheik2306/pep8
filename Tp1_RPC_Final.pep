@@ -1,20 +1,25 @@
+         
+;Message d'entree et verification de manche pair ou pas
          STRO MSG_ENT,d;
-        CHARO '\n',i; 
-          STRO MSG_M,d; Message nomnbre de match a jouer
+         CHARO '\n',i; 
+         STRO MSG_M,d; Message nomnbre de match a jouer
 
          DECI nbmtch,d; entre le nombre de match a jouer.
 
          LDA nbmtch,d ; LOAD le nombre de match
-         ANDA 0x0001,i ; Si ce n'est pas egale a 1 le dernier bit ->
-         BREQ impaire ; aller a impaire
-         BR pair ; sinon branche pair;
+         ANDA 0x0001,i ; si (A == 0) le nombre est pair
+         BREQ pair ; 
+         BR impair ; 
 
-impaire: LDA nbmtch,d;
+
+;Methode qui ajoute +1 manche a un nombre pair
+pair: LDA nbmtch,d;
          ADDA 1,i; IF EVEN ADD TO ACCUMULATOR +1; 
          STA nbmtch,d;
          
 
-pair:    LDA 0,i; REFRESH l'accumulateur a 0
+impair:    LDA 0,i; REFRESH l'accumulateur a 0
+
 
 
 
@@ -24,14 +29,14 @@ while:   STRO nbManche,d; Message de manches a jouer
          SUBA iterate,d; (nbmtch - iterate) = le nombre de match restant
          STA  restant,d;
          DECO restant,d; 
-         CHARO "\n",i;
+         STRO nbManch2,d;
 
          LDA 0,i; reset les choixs a <*>
          LDA '*',i;
          STA choix1,d;
          LDA 0,i;
          LDA '*',i;
-         STA choix2,d; RESET a 0
+         STA choix2,d; 
 
 
          STRO    MSG1,d      ;
@@ -39,6 +44,8 @@ while:   STRO nbManche,d; Message de manches a jouer
 
          LDA 0,i;
 
+
+;Compare les entrees s'ils sont <r>/<p>/ ou <c>
 isNotRPC:LDBYTEA tmp,d ; LOAD dans l'accumulateur la valeur dans tmp 
          CPA  114, i ; COMPARE l'accumulateur a la lettre `r` immediat 
          BRNE    nextp; if (tmp !=<r> && != <p> && != <c>) { fin du programme (arrete) }
@@ -49,27 +56,36 @@ nextp:   CPA     'p',i
          BR assigner;         
       
 nextc:   CPA     'c',i  
-         BRNE    arrete 
+         BRNE    erreur; 
          BR assigner;
 
 
 assign1:STBYTEA choix1,d; STORE le premier byte 
  
 
+
+;Vide le ENTRER dans 'accumulateur' et le compare
 vider:   CHARI enter,d; INSERE LE \n dans l'accumulateur
          LDBYTEA enter,d; LOAD la valeur dans l'accumulateur
          CPA '\n',i; COMPARE cette VALEUR si elle n'est pas un next line arrete le script.
-         BRNE arrete;
+         BRNE erreur;
+
+
 
          LDX choix2,d; Si la valeur de choix2 n'est pas "nulle' passer au programme main
          CPX '*',i; la valeur nulle
          BRNE main; si ce n'est pas egaux a '*", passer a main.
 
+
+;Demande le choix a joueur 2
          STRO    MSG2,d      ;
          CHARI   tmp,d       ; INSERE le `char` dans la variable `tmp`
          BR isNotRPC; verification de R,P ou C
 
 
+
+
+; assigne le choix a joueur 1 ou 2
 assigner: LDX choix1, d;
           CPX '*', i;
           BREQ assign1; 
@@ -80,86 +96,22 @@ assigner: LDX choix1, d;
 
      
 
-
-arrete: STRO    MSG_ERR,d  
+;Message d'erreur et stop le program si l'input n'est pas bon
+erreur: STRO    MSG_ERR,d  
         STOP
 
-mtchnul: STRO egale,d;
-      
-         BR verifier 
-
-
-verifier:   LDA nbmtch,d; verification si le nombre de match est terminer
-         SUBA iterate,d;
-         CPA 1,i; si oui calculer qui est le gagnant avec les points disponible
-         BREQ finGame;
-
-         LDA 0,i; DEBUT -> verification de points, si est suffisant pour gagner.
-         LDA nbmtch,d; 
-         ASRA ; Nombre de Match / 2
-         ADDA 1,i; (Nombre de Match  +1) dans l'accumulateur
-         CPA points1,d; if ( points1 == (nombreDeMatch/2)+1)
-         BREQ termine1; 
-
-         CPA points2,d; if ( points2 == (nombreDeMatch/2)+1)     
-         BREQ termine2; Brancher au gagnant (joueur 2)
-         BR i; FIN -> si aucun gagnant brancher a l'iteration
-
-finGame: LDA points1,d;
-         CPA points2,d;
-         BRLT termine2;
-         CPA points2,d;
-         BRGT termine1;
-
-         STRO egalefin,d;
-         
-         STOP
 
        
-
+;Ajoute +1 a l'iterateur et retourne a la boucle while
 i:      LDA 0,i; DEBUT -> boucle d'iteration
         LDA iterate,d; valeur de [i] 
         ADDA 1,i;            i+1;
-         STA iterate,d;      iterate = i;
-         CPA nbmtch,d;       while (iterate < nombreDeMatch )
-         BRLT while;          {continue program} else
-         STRO termine,d;          S.O.P termine
-         BR arrete;              STOP
-
-gagner2: STRO gagnant2,d;
-         LDA 0,i;
-         LDA points2,d;
-         ADDA 1,i;
-         STA points2,d;
-         LDA 0,i;
-         BR verifier;
-
-gagner1:  STRO gagnant1,d;
-         LDA 0,i;
-         LDA points1,d; Load le nombre de points pour Joueur 1
-         ADDA 1,i;           Ajoute +1 a son pointage
-         STA points1,d;      Store la nouvelle valeure dans points1
-
-      
-         BR verifier;
-
-termine1:STRO fin1,d;
-         STRO manche,d; 
-         DECO points1,d; 
-         STRO tiret,d;
-         DECO points2,d; 
-         
-         STOP;
-
-termine2:STRO fin2,d;
-         STRO manche,d;
-         DECO points1,d; 
-         STRO tiret,d;
-         DECO points2,d; 
+        STA iterate,d;      iterate = i;
+        BR while
 
 
-         STOP;
 
+;Le main sera en 2 calcul. Un sans 'papier' et la methode calculp avec 'papier'
 main:    LDA 0,i;
          LDA choix1,d;
          CPA choix2,d;
@@ -179,7 +131,9 @@ main:    LDA 0,i;
          CPA choix1,d;       Si L'accumulateur (choix2 est > choix1)
          BRGT gagner2;       Joueur 2 vers gagnant2
          BR   gagner1;       SINON Joueur 1 vers gagnant1
-         
+
+
+;Methode calculant le gagnant avec un des choix qui est 'papier'         
 calculp: LDA 0,i;
          LDA choix1,d;
          CPA choix2,d;
@@ -187,26 +141,85 @@ calculp: LDA 0,i;
          BR gagner2;
 
 
-         CHARO   choix1,d    ;
-          
-
-         CHARO   '\n',i   ;
-         CHARO choix2,d;
-         CHARO   '\n',i   ;
- 
 
 
-  
+;Match nul, aucune iteration++, affichier le score et refaire la manche
+mtchnul: STRO egale,d;
+      
+         STRO manche,d; 
+         DECO points1,d; 
+         STRO tiret,d;
+         DECO points2,d; 
+         CHARO '\n',i;
+
+
+
+         BR while
+
+
+
+;Ajout d'un point au joueur 2      
+gagner2: STRO gagnant2,d;
+         LDA 0,i;
+         LDA points2,d;
+         ADDA 1,i;
+         STA points2,d;
+         LDA 0,i;
+         BR verifier; Vers verification des points (si assez pour gagner)
+
+
+;Ajout d'un point au joueur 1     
+gagner1:  STRO gagnant1,d;
+         LDA 0,i;
+         LDA points1,d; Load le nombre de points pour Joueur 1
+         ADDA 1,i;           Ajoute +1 a son pointage
+         STA points1,d;      Store la nouvelle valeure dans points1
+         BR verifier; 
+
+
+
+; DEBUT -> verification de points, si est suffisant pour gagner.
+verifier:LDA 0,i
+         LDA nbmtch,d; 
+         ASRA ; Nombre de Match / 2
+         ADDA 1,i; (Nombre de Match  +1) dans l'accumulateur
+         CPA points1,d; if ( points1 == (nombreDeMatch/2)+1)
+         BREQ termine1; 
+
+         CPA points2,d; if ( points2 == (nombreDeMatch/2)+1)  
+         BREQ termine2; Brancher au gagnant (joueur 2)
+
+
+;affiche le score apres une manche
+         STRO manche,d; 
+         DECO points1,d; 
+         STRO tiret,d;
+         DECO points2,d; 
+         CHARO '\n',i;
+
+
+         BR i; FIN -> si aucun gagnant brancher a l'iteration
+
+
+
+;Messages des gagnants
+termine1:   CHARO '\n',i;
+         STRO fin1,d;
+         BR fin;
+
+termine2:   CHARO '\n',i;
+         STRO fin2,d;
+         BR fin;
+
+
+;Affiche les scores finaux et termine le program
+fin:     STRO manche,d; 
+         DECO points1,d; 
+         STRO tiret,d;
+         DECO points2,d; 
          
+         STOP;
 
-
-         
-     
-next: DECO nbmtch,d
-
-         STRO END,d;
-          
-         STOP                
 
 
 enter: .BLOCK 2;
@@ -215,24 +228,27 @@ tmp:     .BLOCK   2           ;
 iterate: .WORD 0 ; 
 restant: .WORD 0;
 nbmtch:  .WORD 2;
-egale:   .ASCII "Les valeurs sont egaux, jouer une autre fois\n\x00";
-egalefin: .ASCII "Le nombre de match est terminer, aucun gagnant\n\x00";
+egale:   .ASCII "Manche Nulle... \x00";
 choix1:  .WORD '*'          ; 
 choix2:  .WORD '*'          ;
 points1: .WORD 0;
 points2: .WORD 0;
-nbManche: .ASCII "Ils restent ce nombre de manches : \x00";
-MSG_ENT: .ASCII  "Bienvenue a Roche-Papier-Ciseaux\x00";
+nbManche: .ASCII "\nIls restent \x00";
+nbManch2: .ASCII " manche(s) à jouer. \n\x00"
+MSG_ENT: .ASCII  "-----------------------------------------------\n";
+         .ASCII  "---Bienvenue au jeu de roche-papier-ciseau ---\n";
+         .ASCII  "-----------------------------------------------\n\x00";
+
 MSG1:    .ASCII  "JOUEUR 1, quel est votre choix? [r/p/c]\n\x00";
 MSG2:    .ASCII  "JOUEUR 2, quel est votre choix? [r/p/c]\n\x00";
-MSG_ERR: .ASCII  "\nERREUR DENTREE - JEUX TERMINER\x00";
-MSG_M:   .ASCII  "\nVeuillez entrer le nombre de match a jouer\n\x00";
-gagnant1:    .ASCII  "JOUEUR 1: +1 points!\n\x00";
-gagnant2:    .ASCII  "JOUEUR 2: +1 points!\n\x00";
-fin1: .ASCII "JOUEUR 1 EST LE GAGNANT!! \n \x00";
-fin2:    .ASCII "JOUEUR 2 EST LE GAGNANT!! \n \x00";
+MSG_ERR: .ASCII  "\nErreur d'entrée! Programme terminé.\x00";
+MSG_M:   .ASCII  "\nCombien de manches voulez-vous jouer?\n\x00";
+gagnant1:    .ASCII  "JOUEUR 1 a gagné cette manche! \x00";
+gagnant2:    .ASCII  "JOUEUR 2 a gagné cette manche! \x00";
+fin1: .ASCII "\nJOUEUR 1 A GAGNÉ LE MATCH! FÉLICITATIONS!\n\x00";
+fin2:    .ASCII "\nJOUEUR 2 A GAGNÉ LE MATCH! FÉLICITATIONS!\n\x00";
 termine:        .ASCII "le nombre de manche est terminer\n\x00";
-manche: .ASCII "Score apres la manche : \x00";
+manche: .ASCII "Score : \x00";
 tiret: .ASCII " - \x00" ;
 END: .ASCII "\nend of program \n\x00";
          .END                  

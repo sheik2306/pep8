@@ -21,7 +21,7 @@
 
 LDX bufferSz,d;
 SUBX 1,i;
-STX i,d;
+STX i,d; Iterateur du haut vers le bas
 
  
 ;Positionne la ligne et ajoute dans une variable VAR3  
@@ -58,7 +58,6 @@ recom:   LDX i,d;
 
 ;determine la grosseur du bateau mets dans VAR0
          SUBX 1,i;
-         ;LDX 0,i
          LDA 0,i;
          LDBYTEA buffer,x;
          STBYTEA var0,d;

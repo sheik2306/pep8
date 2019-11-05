@@ -1,3 +1,4 @@
+
          LDA     buffer,i    
          LDX     size,i      
          CALL    STRI        ; STRI(buffer,size);
@@ -12,13 +13,17 @@
          LDX bufferSz,d;
          call b_start;
          LDA 0,i
-         LDX 0,i;
-         call tab_loop; creation du table
+
+
+         LDX tableau,i;
+         call tab_st; creation de table
          
+
+        ; LDX tableau,i; 
         ; call afficher;
 
 
-
+LDX 0,i;
 LDX bufferSz,d;
 SUBX 1,i;
 STX i,d; Iterateur du haut vers le bas
@@ -36,7 +41,6 @@ recom:   LDX i,d;
 
 ;Positionne la colonne et ajoute dans une variable VAR2
         SUBX 1,i;
-; LDX 2,i
          LDA 0,i;
          LDBYTEA buffer,x;
          SUBA 'A',i;
@@ -54,6 +58,7 @@ recom:   LDX i,d;
          STBYTEA var1,d;
          LDA 0,i;
 ; FIN dinsertion
+
 
 
 ;determine la grosseur du bateau mets dans VAR0
@@ -134,8 +139,12 @@ verif:   LDX 0,i;
          STX i,d;
          BR recom;
 
-finpos:   call afficher
-         CHARO '\n',i;
+finpos:   CHARO '\n',i; ;call afficher
+       
+
+         LDX 0,i;
+         LDX tableau,i;
+         call afficher;
 
          STOP
 
@@ -146,6 +155,8 @@ var1: .BLOCK 2; element 1 dans le buffer
 var0: .BLOCK 2; element 0 dans le buffer
 pos: .BLOCK 2; element position du tableau
 i: .BLOCK 2; iterateur de buffer
+
+
 
 
 
@@ -168,7 +179,8 @@ loop_i: CPX lignes,d;
         ADDA 36,i;
         ADDX 1,i;
         BR loop_i;
-fin_i:  STA dummy,d;
+fin_i:  ADDA tableau,i;
+         STA dummy,d;
          LDX dummy,d;
          ret0
 
@@ -183,33 +195,48 @@ dummy2: .BLOCK 2;
 
 
 
+; Affiche le tableau inserer en parametre
 
-; Methode qui affiche un tableau 
-; Methode d'un long tableau;
+
+; Parameters:
+
+; Register X: Adresse du tableau
+
+;
+
+; Return:
+
+; void.
 
 afficher:LDa 0,i
          STRO aff_col,d; 
 
-         LDX     0,i         
-         STX     ix,d  
+            
+         STX     ix,d 
+         ADDX 324,i;
+         STX fin_x,d; 
 
 ;Debut de ligne      
-loop_ix:  CPX     324,i     
-         BRGE    fin         ; for(ix=0;ix<324;ix+=36) {
+loop_ix: LDX ix,d;
+         CPX     fin_x,d;     
+         BRGE    fin         ; for(ix=0;ix<(mem[ix]+324);ix+=36) {
          DECO  neuf_ln,d;
          CHARO '\|',i;   
-         LDX     0,i;       
+      
          STX     jx,d  ;
 ; incremente le saut de ligne par 1       
          LDA 0,i;   
          LDA neuf_ln,d;
-        ADDA 1,i;
+         ADDA 1,i;
          STA neuf_ln,d;
          LDA 0,i;
-      
-loop_jx: CPX     36,i         
-         BRGE    next_ix     ;   for(jx=0;jx<36;jx+=1) {
-         ADDX    ix,d         
+         ADDX 36,i;
+         STX next_j,d;
+         LDX jx,d;
+
+loop_jx: CPX next_j,d;   
+         BRGE    next_ix     ;   for(jx=0;jx< mem[ix] + 36;jx+=1) {
+         ;ADDX    ix,d         
          CHARO    tableau,x   
          LDX     jx,d        
          ADDX    1,i        
@@ -230,6 +257,8 @@ fin:     LDA 1,i;
 ; Variables globales
 ix:      .BLOCK  2           ; #2d itérateur ix pour tri
 jx:      .BLOCK  2           ; #2d itérateur jx pour tri
+fin_x: .BLOCK 2            ;#2d fin d'adresse pour x
+next_j: .BLOCK 2;            ;#2d prochain jx
 neuf_ln: .WORD 1;
 aff_col: .ASCII "  ABCDEFGHIJKLMNOPQR\n\x00";
 
@@ -241,8 +270,11 @@ aff_col: .ASCII "  ABCDEFGHIJKLMNOPQR\n\x00";
 
 
 ; METHODE QUI ITERE UN STRING 
+
 ; IN: A=buffer
+
 ;     X=bufferSize
+
 b_start: STX bufferSz,d;
          LDX 0,i;
 b_loop:  CPX bufferSz,d;
@@ -256,11 +288,15 @@ b_fin:     RET0;
 
 
 
-;METHODE qui cree un tableau globale 9x 18
-; IN A=lignes
-;    B= Colonnes
+;METHODE qui cree un tableau globale 9 x 18
 
-tab_loop:  CPX 324,i;
+; IN X= adresse du tableau
+
+tab_st:    ADDX 324,i;
+           STX tb_fin,d;; 
+           LDX tableau,i;
+
+tab_loop:  CPX tb_fin,d;
            BRGE tab_fin;
            LDA 0,i;
            LDBYTEA '~',i;      
@@ -270,7 +306,8 @@ tab_loop:  CPX 324,i;
 
 tab_fin: ret0;
 
-tableau: .BLOCK 324;
+tableau: .BLOCK 324; #324d adresse du tableau 
+tb_fin: .BLOCK 2;           #2d adresse de fin
 
 ;FIN TABLEAU
 

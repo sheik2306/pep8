@@ -22,6 +22,7 @@ loop_in: CPA     0,i
 ;Inserer buffer ici
          LDX     snakeCpt,d;
          call    char_rd
+         call    verify;
          ADDX    1,i;
          STX     snakeCpt,d;
          LDX     adrMail,d
@@ -58,7 +59,6 @@ snakeCpt:.WORD   0           ; #2d compteur longueur du serpent
 
 
 
-
 ; CHAR_RD: Fetch une donner du buffer
 ;        In: X = Pointeur du caractere a aller chercher
 ;        Out: A= la valeur a mettre
@@ -69,9 +69,44 @@ char_rd: LDA     0,i
 
 
 
-         
 
-tmp:     .BLOCK 2
+
+
+; VERIFY: verifie le previous maillon  (if !HEAD && A= - ) sinon retourner >
+; mettre le previous maillon dans le maillon present
+;        In      A= un byte ( -,d ou g,)
+;        Out     A= un byte (>,^,V,>)
+
+verify:  STA     tmp,d;      Byte temporaire a inserer
+         LDX     adrMail,d
+         LDA     0,i         
+         STA     mNext,x     ;   X.next = 0;
+         CPX     head,d    
+         BREQ    debutS    ;si le debut du serpent mettre >
+         SUBX    mLength,i   
+         LDBYTEA mVal,x  
+         RET0
+
+         
+         
+Ttdroit: RET0;
+
+debutS:  LDA 0,i;
+         LDBYTEA '>',i;
+         RET0;
+
+tmp:     .BLOCK 2;
+
+
+
+
+
+
+
+
+
+
+
 
 
 

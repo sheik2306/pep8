@@ -61,7 +61,7 @@ snakeCpt:.WORD   0           ; #2d compteur longueur du serpent
 
 ; CHAR_RD: Fetch une donner du buffer
 ;        In: X = Pointeur du caractere a aller chercher
-;        Out: A= la valeur a mettre
+;        Out: A= la valeur d'un byte pris dans le BUFFER [-,d,g]
 char_rd: LDA     0,i
          LDA     buffer,i;
          LDBYTEA buffer,x;
@@ -84,16 +84,20 @@ verify:  STBYTEA     tmp,d;      Byte temporaire a inserer
          BREQ    garder;
          CPA     'g',i;
          BREQ    Lturn
-         STOP
+Rturn:   call d_search
+         
+         RET0
+
+     
 
 Lturn:   call g_search    
 
 
          RET0
 
-         STOP
+      
          
-
+         
 
 ;DEBUT DE GARDER LE PREVIOUS MAILLION
 garder:  LDX     adrMail,d
@@ -112,13 +116,41 @@ debutS:  LDA 0,i;
          LDBYTEA '>',i;
          RET0;
 
-tmp:     .BLOCK 2;           #2h 
+
+
+
+;EFFECTUE les virages a DROITE dependant de la position du maillon precedent
+
+d_search:LDX     adrMail,d
+         LDA     0,i         
+         STA     mNext,x     ;   X.next = 0;
+         CPX     head,d    
+         BREQ    debutS    ;si le debut du serpent mettre >
+         SUBX    mLength,i   
+         LDBYTEA mVal,x 
+         CPA     '>',i;
+         BREQ    plus24
+         CPA     '<',i;
+         BREQ    plus34
+         CPA     '^',i;
+         BREQ    moin32
+         SUBA 26,i
+         RET0
+
+plus34:  ADDA    34,i;
+         RET0
+
+moin32:  SUBA    32,i;
+         RET0
+
+         STOP
+plus24:  ADDA 24,i;
+         RET0
 
 
 
 
-
-
+;EFFECTUE les virages a GAUCHE dependant de la position du maillon precedent
 
 g_search:LDX     adrMail,d
          LDA     0,i         
@@ -136,7 +168,7 @@ g_search:LDX     adrMail,d
          SUBA 24,i
          RET0
 
-moin34:  SUBA    34,i;
+moin34:  SUBA    34,i; 
          RET0
 
 plus26:  ADDA    26,i;
@@ -146,6 +178,8 @@ plus26:  ADDA    26,i;
 plus32: ADDA 32,i;
          RET0
 
+
+tmp:     .BLOCK 2;           #2h 
 
 
 

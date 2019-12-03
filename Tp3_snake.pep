@@ -5,9 +5,7 @@
          DECO snakeSz,d;
          CHARO '\n',i;
 
-
-
-
+    
 
 ; // Lit la liste
          LDA     snakeSz,d;        
@@ -20,9 +18,11 @@ loop_in: CPA     0,i
          CALL    new         ;   X = new Maillon(); #mVal #mNext
          STX     adrMail,d  
 ;Inserer buffer ici
+         LDX     0,i;
          LDX     snakeCpt,d;
          call    char_rd
          call    verify;
+         LDX     snakeCpt,d;
          ADDX    1,i;
          STX     snakeCpt,d;
          LDX     adrMail,d
@@ -77,8 +77,17 @@ char_rd: LDA     0,i
 ;        In      A= un byte ( -,d ou g,)
 ;        Out     A= un byte (>,^,V,>)
 
-verify:  STA     tmp,d;      Byte temporaire a inserer
-         LDX     adrMail,d
+verify:  STBYTEA     tmp,d;      Byte temporaire a inserer
+         LDA     0,i;
+         LDBYTEA tmp,d
+         CPA     '-',i;
+         BREQ    garder;
+         STOP
+         
+
+
+
+garder:  LDX     adrMail,d
          LDA     0,i         
          STA     mNext,x     ;   X.next = 0;
          CPX     head,d    
@@ -89,13 +98,12 @@ verify:  STA     tmp,d;      Byte temporaire a inserer
 
          
          
-Ttdroit: RET0;
 
 debutS:  LDA 0,i;
          LDBYTEA '>',i;
          RET0;
 
-tmp:     .BLOCK 2;
+tmp:     .BLOCK 2;           #2h 
 
 
 

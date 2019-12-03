@@ -82,11 +82,20 @@ verify:  STBYTEA     tmp,d;      Byte temporaire a inserer
          LDBYTEA tmp,d
          CPA     '-',i;
          BREQ    garder;
+         CPA     'g',i;
+         BREQ    Lturn
+         STOP
+
+Lturn:   call g_search    
+
+
+         RET0
+
          STOP
          
 
 
-
+;DEBUT DE GARDER LE PREVIOUS MAILLION
 garder:  LDX     adrMail,d
          LDA     0,i         
          STA     mNext,x     ;   X.next = 0;
@@ -95,7 +104,7 @@ garder:  LDX     adrMail,d
          SUBX    mLength,i   
          LDBYTEA mVal,x  
          RET0
-
+;FIN DE GARDER LE PREVIOUS MAILLON
          
          
 
@@ -111,9 +120,31 @@ tmp:     .BLOCK 2;           #2h
 
 
 
+g_search:LDX     adrMail,d
+         LDA     0,i         
+         STA     mNext,x     ;   X.next = 0;
+         CPX     head,d    
+         BREQ    debutS    ;si le debut du serpent mettre >
+         SUBX    mLength,i   
+         LDBYTEA mVal,x 
+         CPA     '>',i;
+         BREQ    plus32
+         CPA     '<',i;
+         BREQ    plus26
+         CPA     '^',i;
+         BREQ    moin34
+         SUBA 24,i
+         RET0
 
+moin34:  SUBA    34,i;
+         RET0
 
+plus26:  ADDA    26,i;
+         RET0
 
+         STOP
+plus32: ADDA 32,i;
+         RET0
 
 
 

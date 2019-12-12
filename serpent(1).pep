@@ -96,7 +96,7 @@ firstEl: LDA     cpt,d
 out:     LDX     head,d      
 loop_out:CPX     0,i         
          BREQ    fin         ; for (X=head; X!=null; X=X.next) {
-         LDBYTEA mVal,x  
+         ;LDBYTEA mVal,x  
          call    insert    
          CHARO   mVal,x      
          CHARO   ' ',i       ;       print(X.val + " ");}
@@ -288,7 +288,7 @@ insert:  STBYTEA sauveA,d;
          BRNE arret
 
          LDA 0,i;
-         LDBYTEA sauveA,d;
+         LDA sauveX,d;
          STA     0,x
 
 
@@ -516,7 +516,7 @@ i_loop:  LDX     ix,d;
          LDX     0,i
          STX     jx,d
               
-j_loop:  CPX     36,i
+j_loop:  CPX     40,i
          BRGE    next_ix
          LDX     ix,d
          LDA     tableau,x
@@ -574,7 +574,8 @@ tab_fin: .EQUATE 18          ;fin tableau 9 lignes*2 bytes
 ; afficher: Affiche un tableau de taille 9x18.
 ;        IN = /
 ;        OUT = /
-afficher:STRO    col_aff,d
+afficher:SUBSP 2,i;          reserve  #tabAdd 
+         STRO    col_aff,d
          LDX     0,i
          STX     ix,d
          STX     jx,d
@@ -596,8 +597,22 @@ j_loo:   CPX     40,i
          STA     ptr,d
          LDX     ptr,d
          ADDX    jx,d
+         LDA     0,i
+         LDBYTEA     0,x
+
+         CPA     ' ',i;
+        BRNE affSerp
          CHARO   0,x
-         LDX     jx,d
+        BR nextJ
+
+affSerp: LDA     0,i
+         LDA 0,x
+         STA tabAdd,s
+         CHARO tabAdd,sf;
+
+
+         
+nextJ:   LDX     jx,d
          ADDX    1,i
          STX     jx,d
          BR      j_loo
@@ -608,12 +623,13 @@ next_i:  CHARO    '\n',i
          BR      i_loo     
 finaff:  LDA     1,i
          STA     nb_ligne,d
+         ADDSP   2,i; dereserve  #tabAdd 
          RET0
 
 nb_ligne:.WORD   1           ; Affichage des numeros de ligne         
 col_aff: .ASCII  " ABCDEFGHIJKLMNOPQR\n\x00"
 
-
+tabAdd:        .EQUATE 0; #2d
 
 
 
